@@ -1,5 +1,6 @@
 import { UserCredentials } from '../types';
 import api from '../API/Index';
+import { NEO4J_DB, NEO4J_PASSWORD, NEO4J_URI, NEO4J_USERNAME } from '../utils/Credentials';
 
 export const graphQueryAPI = async (
   userCredentials: UserCredentials,
@@ -28,17 +29,12 @@ export const graphQueryAPI = async (
 };
 
 export const customGraphQueryAPI = async (query_type: string, document_names: (string | undefined)[] | undefined) => {
-  const URI = 'neo4j+s://3a1e9022.databases.neo4j.io';
-  const DB = 'neo4j';
-  const USERNAME = 'neo4j';
-  const PASSWORD = 'jyElcTqS_tJtEOgSUCc1Q3EmpQLdVDjyLyhn_y9yp98';
-
   try {
     const formData = new FormData();
-    formData.append('uri', URI);
-    formData.append('database', DB);
-    formData.append('userName', USERNAME);
-    formData.append('password', PASSWORD);
+    formData.append('uri', NEO4J_URI);
+    formData.append('database', NEO4J_DB);
+    formData.append('userName', NEO4J_USERNAME);
+    formData.append('password', NEO4J_PASSWORD);
     formData.append('query_type', query_type ?? 'entities');
     formData.append('document_names', JSON.stringify(document_names));
 
