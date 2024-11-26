@@ -1,25 +1,6 @@
 import { calcWordColor } from '@neo4j-devtools/word-color';
 import type { Relationship } from '@neo4j-nvl/base';
-import {
-  CustomFile,
-  Entity,
-  ExtendedNode,
-  ExtendedRelationship,
-  GraphType,
-  Messages,
-  Scheme,
-  SourceNode,
-  UserCredentials,
-} from '../types';
-import Wikipediadarkmode from '../assets/images/wikipedia-darkmode.svg';
-import Wikipediadlogo from '../assets/images/wikipedia.svg';
-import webdarklogo from '../assets/images/web-darkmode.svg';
-import weblogo from '../assets/images/web.svg';
-import youtubedarklogo from '../assets/images/youtube-darkmode.svg';
-import youtubelightlogo from '../assets/images/youtube-lightmode.svg';
-import s3logo from '../assets/images/s3logo.png';
-import gcslogo from '../assets/images/gcs.webp';
-import { chatModeLables } from './Constants';
+import { ExtendedNode, ExtendedRelationship, GraphType, Scheme } from '../types';
 
 // Get the Url
 export const url = () => {
@@ -28,86 +9,6 @@ export const url = () => {
     url = process.env.VITE_BACKEND_API_URL;
   }
   return !url || !url.match('/$') ? url : url.substring(0, url.length - 1);
-};
-
-// validation check for s3 bucket url
-export const validation = (url: string) => {
-  return url.trim() != '' && /^s3:\/\/([^/]+)\/?$/.test(url) != false;
-};
-
-export const wikiValidation = (url: string) => {
-  return url.trim() != '' && /https:\/\/([a-zA-Z]{2,3})\.wikipedia\.org\/wiki\/(.*)/gm.test(url) != false;
-};
-export const webLinkValidation = (url: string) => {
-  return (
-    url.trim() != '' &&
-    /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_.~#?&//=]*)/g.test(url) != false
-  );
-};
-export const youtubeLinkValidation = (url: string) => {
-  return (
-    url.trim() != '' &&
-    /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/.test(
-      url
-    ) != false
-  );
-};
-// Status indicator icons to status column
-export const statusCheck = (status: string) => {
-  switch (status) {
-    case 'New':
-      return 'info';
-    case 'N/A':
-      return 'unknown';
-    case 'Completed':
-      return 'success';
-    case 'Processing':
-      return 'warning';
-    case 'Uploading':
-      return 'warning';
-    case 'Failed':
-      return 'danger';
-    case 'Upload Failed':
-      return 'danger';
-    case 'Reprocess':
-      return 'info';
-    default:
-      return 'unknown';
-  }
-};
-
-// Graph Functions
-export const constructQuery = (queryTochange: string, docLimit: string) => {
-  return `MATCH docs = (d:Document {status:'Completed'}) 
-  WITH docs, d ORDER BY d.createdAt DESC 
-  LIMIT ${docLimit}
-  CALL { WITH d
-    OPTIONAL MATCH chunks=(d)<-[:PART_OF]-(c:Chunk)
-    RETURN chunks, c LIMIT 50
-  }
-  WITH [] 
-  ${queryTochange}
-  AS paths
-  CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
-  CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
-  RETURN nodes, rels`;
-};
-
-export const constructDocQuery = (queryTochange: string) => {
-  return `
-MATCH docs = (d:Document {status:'Completed'}) 
-WHERE d.fileName = $document_name
-WITH docs, d ORDER BY d.createdAt DESC 
-CALL { WITH d
-  OPTIONAL MATCH chunks=(d)<-[:PART_OF]-(c:Chunk)
-  RETURN chunks, c LIMIT 50
-}
-WITH [] 
-${queryTochange}
-AS paths
-CALL { WITH paths UNWIND paths AS path UNWIND nodes(path) as node RETURN collect(distinct node) as nodes }
-CALL { WITH paths UNWIND paths AS path UNWIND relationships(path) as rel RETURN collect(distinct rel) as rels }
-RETURN nodes, rels`;
 };
 
 export const getSize = (node: any) => {
@@ -130,7 +31,7 @@ export const getNodeCaption = (node: any) => {
   if (node.properties.fileName) {
     return node.properties.fileName;
   }
-  if(node.labels[0] === '__Community__'){
+  if (node.labels[0] === '__Community__') {
     return node.properties.title;
   }
   return node.properties.id;
@@ -145,16 +46,6 @@ export const getIcon = (node: any) => {
   }
   return undefined;
 };
-export function extractPdfFileName(url: string): string {
-  const splitUrl = url.split('/');
-  const [encodedFileName] = splitUrl[splitUrl.length - 1].split('?');
-  const decodedFileName = decodeURIComponent(encodedFileName);
-  if (decodedFileName.includes('/')) {
-    const splitedstr = decodedFileName.split('/');
-    return splitedstr[splitedstr.length - 1];
-  }
-  return decodedFileName;
-}
 
 export const processGraphData = (neoNodes: ExtendedNode[], neoRels: ExtendedRelationship[]) => {
   const schemeVal: Scheme = {};
@@ -338,140 +229,12 @@ export const filterData = (
   }
   return { filteredNodes, filteredRelations, filteredScheme };
 };
-export const getDateTime = () => {
-  const date = new Date();
-  const formattedDateTime = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-  return formattedDateTime;
-};
 
-export const getIsLoading = (messages: Messages[]) => {
-  return messages.some((msg) => msg.isTyping || msg.isLoading);
-};
-export const calculateProcessingTime = (fileSizeBytes: number, processingTimePerByteSeconds: number) => {
-  const totalProcessingTimeSeconds = (fileSizeBytes / 1000) * processingTimePerByteSeconds;
-  const minutes = Math.floor(totalProcessingTimeSeconds / 60);
-  const seconds = Math.floor(totalProcessingTimeSeconds % 60);
-  return { minutes, seconds };
-};
-
-export const capitalize = (word: string): string => {
-  return `${word[0].toUpperCase()}${word.slice(1)}`;
-};
-export const parseEntity = (entity: Entity) => {
-  const { labels, properties } = entity;
-  let [label] = labels;
-  const text = properties.id;
-  if (!label) {
-    label = 'Entity';
-  }
-  return { label, text };
-};
-
-export const titleCheck = (title: string) => {
-  return title === 'Chunk' || title === 'Document';
-};
-
-export const getFileSourceStatus = (item: SourceNode) => {
-  if (item?.fileSource === 's3 bucket' && localStorage.getItem('accesskey') === item?.awsAccessKeyId) {
-    return item?.status;
-  }
-  if (item?.fileSource === 'local file') {
-    return item?.status;
-  }
-  if (item?.status === 'Completed' || item.status === 'Failed' || item.status === 'Reprocess') {
-    return item?.status;
-  }
-  if (
-    item?.fileSource === 'Wikipedia' ||
-    item?.fileSource === 'youtube' ||
-    item?.fileSource === 'gcs bucket' ||
-    item?.fileSource === 'web-url'
-  ) {
-    return item?.status;
-  }
-  return 'N/A';
-};
-export const isFileCompleted = (waitingFile: CustomFile, item: SourceNode) =>
-  waitingFile && item.status === 'Completed';
-
-export const calculateProcessedCount = (prev: number, batchSize: number) =>
-  (prev === batchSize ? batchSize - 1 : prev + 1);
-
-export const isProcessingFileValid = (item: SourceNode, userCredentials: UserCredentials) => {
-  return item.status === 'Processing' && item.fileName != undefined && userCredentials && userCredentials.database;
-};
 export const sortAlphabetically = (a: Relationship, b: Relationship) => {
   const captionOne = a.caption?.toLowerCase() || '';
   const captionTwo = b.caption?.toLowerCase() || '';
   return captionOne.localeCompare(captionTwo);
 };
-
-export const capitalizeWithPlus = (s: string) => {
-  return s
-    .split('+')
-    .map((s) => capitalize(s))
-    .join('+');
-};
-export const capitalizeWithUnderscore = (s: string) => capitalize(s).split('_').join(' ');
-
-export const getDescriptionForChatMode = (mode: string): string => {
-  switch (mode.toLowerCase()) {
-    case chatModeLables.vector:
-      return 'Utilizes vector indexing on text chunks to enable semantic similarity search.';
-    case chatModeLables.graph:
-      return 'Leverages text-to-cypher translation to query a database and retrieve relevant data, ensuring a highly targeted and contextually accurate response.';
-    case chatModeLables['graph+vector']:
-      return 'Combines vector indexing on text chunks with graph connections, enhancing search results with contextual relevance by considering relationships between concepts.';
-    case chatModeLables.fulltext:
-      return 'Employs a fulltext index on text chunks for rapid keyword-based search, efficiently identifying documents containing specific words or phrases.';
-    case chatModeLables['graph+vector+fulltext']:
-      return 'Merges vector indexing, graph connections, and fulltext indexing for a comprehensive search approach, combining semantic similarity, contextual relevance, and keyword-based search for optimal results.';
-    case chatModeLables['entity search+vector']:
-      return 'Combines entity node vector indexing with graph connections for accurate entity-based search, providing the most relevant response.';
-    case chatModeLables['global search+vector+fulltext']:
-      return 'Use vector and full-text indexing on community nodes to provide accurate, context-aware answers globally.';
-    default:
-      return 'Chat mode description not available'; // Fallback description
-  }
-};
-export const getLogo = (mode: string): Record<string, string> => {
-  if (mode === 'light') {
-    return {
-      Wikipedia: Wikipediadarkmode,
-      'web-url': webdarklogo,
-      's3 bucket': s3logo,
-      youtube: youtubedarklogo,
-      'gcs bucket': gcslogo,
-    };
-  }
-  return {
-    Wikipedia: Wikipediadlogo,
-    'web-url': weblogo,
-    's3 bucket': s3logo,
-    youtube: youtubelightlogo,
-    'gcs bucket': gcslogo,
-  };
-};
-
-export const generateYouTubeLink = (url: string, startTime: string) => {
-  try {
-    const urlObj = new URL(url);
-    urlObj.searchParams.set('t', startTime);
-    return urlObj.toString();
-  } catch (error) {
-    console.error('Invalid URL:', error);
-    return '';
-  }
-};
-export function isAllowedHost(url: string, allowedHosts: string[]) {
-  try {
-    const parsedUrl = new URL(url);
-    return allowedHosts.includes(parsedUrl.host);
-  } catch (e) {
-    return false;
-  }
-}
-
 export const getCheckboxConditions = (allNodes: ExtendedNode[]) => {
   const isDocChunk = allNodes.some((n) => n.labels?.includes('Document') || n.labels?.includes('Chunk'));
   const isEntity = allNodes.some(
@@ -499,26 +262,3 @@ export const graphTypeFromNodes = (allNodes: ExtendedNode[]) => {
   }
   return graphType;
 };
-export function downloadClickHandler<Type>(
-  JsonData: Type,
-  downloadLinkRef: React.RefObject<HTMLAnchorElement>,
-  filename: string
-) {
-  const textFile = new Blob([JSON.stringify(JsonData)], { type: 'application/json' });
-  if (downloadLinkRef && downloadLinkRef.current) {
-    downloadLinkRef.current.href = URL.createObjectURL(textFile);
-    downloadLinkRef.current.download = filename;
-    downloadLinkRef.current.click();
-  }
-}
-export function getNodes<Type extends Entity | ExtendedNode>(nodesData: Array<Type>, mode: string) {
-  return nodesData.map((n) => {
-    if (!n.labels.length && mode === chatModeLables['entity search+vector']) {
-      return {
-        ...n,
-        labels: ['Entity'],
-      };
-    }
-    return n;
-  });
-}

@@ -27,14 +27,11 @@ export const graphQueryAPI = async (
   }
 };
 
-export const customGraphQueryAPI = async (
-  query_type: string,
-  document_names: (string | undefined)[] | undefined
-) => {
-  const URI = "neo4j+s://3a1e9022.databases.neo4j.io";
-  const DB = "neo4j";
-  const USERNAME = "neo4j";
-  const PASSWORD = "jyElcTqS_tJtEOgSUCc1Q3EmpQLdVDjyLyhn_y9yp98"
+export const customGraphQueryAPI = async (query_type: string, document_names: (string | undefined)[] | undefined) => {
+  const URI = 'neo4j+s://3a1e9022.databases.neo4j.io';
+  const DB = 'neo4j';
+  const USERNAME = 'neo4j';
+  const PASSWORD = 'jyElcTqS_tJtEOgSUCc1Q3EmpQLdVDjyLyhn_y9yp98';
 
   try {
     const formData = new FormData();
@@ -55,7 +52,7 @@ export const customGraphQueryAPI = async (
     console.log('Error Posting the Question:', error);
     throw error;
   }
-}
+};
 
 export const getNeighbors = async (userCredentials: UserCredentials, elementId: string) => {
   try {

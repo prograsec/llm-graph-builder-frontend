@@ -2,7 +2,8 @@ import { Banner, Dialog, Flex, IconButtonArray, LoadingSpinner, useDebounce } fr
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BasicNode,
-  BasicRelationship, CustomGraphViewModalProps,
+  BasicRelationship,
+  CustomGraphViewModalProps,
   EntityType,
   ExtendedNode,
   ExtendedRelationship,
@@ -18,28 +19,26 @@ import {
   MagnifyingGlassMinusIconOutline,
   MagnifyingGlassPlusIconOutline,
 } from '@neo4j-ndl/react/icons';
-import { IconButtonWithToolTip } from '../UI/IconButtonToolTip';
+import { IconButtonWithToolTip } from '../UI/IconButtonTooltip';
 import { filterData, getCheckboxConditions, graphTypeFromNodes, processGraphData } from '../../utils/Utils';
-import { useCredentials } from '../../context/UserCredentials';
 
-import { customGraphQueryAPI} from '../../services/GraphQuery';
+import { customGraphQueryAPI } from '../../services/GraphQuery';
 import { graphLabels, nvlOptions, queryMap } from '../../utils/Constants';
 import CheckboxSelection from './CheckboxSelection';
 
-import ResultOverview from './ResultOverview';
+import ResultOverview from './ResultOverview.tsx';
 import { ResizePanelDetails } from './ResizePanel';
 import GraphPropertiesPanel from './GraphPropertiesPanel';
 
-const GraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
-                                                                        open,
-                                                                        inspectedName,
-                                                                        setGraphViewOpen,
-                                                                        viewPoint,
-                                                                        nodeValues,
-                                                                        relationshipValues,
-                                                                        selectedRows,
-
-                                                                      }) => {
+const CustomGraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
+  open,
+  inspectedName,
+  setGraphViewOpen,
+  viewPoint,
+  nodeValues,
+  relationshipValues,
+  selectedRows,
+}) => {
   const nvlRef = useRef<NVL>(null);
   const [nodes, setNodes] = useState<ExtendedNode[]>([]);
   const [relationships, setRelationships] = useState<ExtendedRelationship[]>([]);
@@ -48,7 +47,6 @@ const GraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<'unknown' | 'success' | 'danger'>('unknown');
   const [statusMessage, setStatusMessage] = useState<string>('');
-  const { userCredentials } = useCredentials();
   const [scheme, setScheme] = useState<Scheme>({});
   const [newScheme, setNewScheme] = useState<Scheme>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,10 +59,10 @@ const GraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
     graphType.includes('DocumentChunk') && graphType.includes('Entities')
       ? queryMap.DocChunkEntities
       : graphType.includes('DocumentChunk')
-        ? queryMap.DocChunks
-        : graphType.includes('Entities')
-          ? queryMap.Entities
-          : '';
+      ? queryMap.DocChunks
+      : graphType.includes('Entities')
+      ? queryMap.Entities
+      : '';
 
   // fit graph to original position
   const handleZoomToFit = () => {
@@ -106,16 +104,16 @@ const GraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
       const nodeRelationshipData =
         viewPoint === graphLabels.showGraphView
           ? await customGraphQueryAPI(
-            graphQuery,
-            // selectedRows?.map((f) => f.name)
-          selectedRows
-          )
+              graphQuery,
+              // selectedRows?.map((f) => f.name)
+              selectedRows
+            )
           : await customGraphQueryAPI(graphQuery, [inspectedName ?? '']);
       return nodeRelationshipData;
     } catch (error: any) {
       console.log(error);
     }
-  }, [viewPoint, selectedRows, graphQuery, inspectedName, userCredentials]);
+  }, [viewPoint, selectedRows, graphQuery, inspectedName]);
 
   // Api call to get the nodes and relations
   const graphApi = async (mode?: string) => {
@@ -444,4 +442,4 @@ const GraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
     </>
   );
 };
-export default GraphViewModal;
+export default CustomGraphViewModal;
