@@ -1,45 +1,61 @@
 import './App.css';
 import '@neo4j-ndl/base/lib/neo4j-ds-styles.css';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import CustomGraphViewModal from './components/Graph/CustomGraphViewModal.tsx';
 import { useQuery } from 'react-query';
 import { getSources } from './services/SourcesList.ts';
+import Table from 'react-bootstrap/Table';
+import { Button, FormCheck, Spinner } from 'react-bootstrap';
 
-function toggleCheck(checkboxes: boolean[], index: number) {
-  if (index < 0 || index >= checkboxes.length) return checkboxes;
-  return checkboxes.map((checkbox, i) => (index === i ? !checkbox : checkbox));
-}
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 const App: React.FC = () => {
   const [graphViewOpen, setGraphViewOpen] = useState<boolean>(false);
   const [selected, setSelected] = useState<number>(-1);
   const { data: sources, isLoading: sourcesLoading } = useQuery({ queryKey: ['sources-list'], queryFn: getSources });
 
   if (!sources) {
-    return <p>Loading sources</p>;
+    return (
+      <main className='h-dvh flex items-center justify-center gap-4 bg-[#7642d9]'>
+        <Spinner animation='grow' variant='success'></Spinner>
+        <Spinner animation='grow' variant='success'></Spinner>
+        <Spinner animation='grow' variant='success'></Spinner>
+      </main>
+    );
   }
 
   return (
-    <>
-      <table className='text-left w-full'>
+    <main className='p-4'>
+      <p>Select a data source and click 'View Graph'</p>
+      <Table striped bordered hover>
         <thead>
           <tr>
             <th>Selected</th>
             <th>File Name</th>
+            <th>Model</th>
+            <th>Node Count</th>
+            <th>Relationships Count</th>
           </tr>
         </thead>
         <tbody>
           {sources.data.map((source, i) => (
             <tr key={source.fileName}>
-              <td>
-                <input type='checkbox' checked={selected === i} onClick={() => setSelected(i)} />
+              <td className='max-w-max' onClick={() => setSelected(i)}>
+                <input type='checkbox' checked={selected === i} />
               </td>
               <td>{source.fileName}</td>
+              <td>{source.model}</td>
+              <td>{source.nodeCount}</td>
+              <td>{source.relationshipCount}</td>
             </tr>
           ))}
         </tbody>
-      </table>
-      {selected !== -1 && <button onClick={() => setGraphViewOpen(true)}>View Graph</button>}
+      </Table>
+      {selected !== -1 && (
+        <Button onClick={() => setGraphViewOpen(true)} variant='success'>
+          <Spinner animation='border' role='status' hidden={!sourcesLoading} size='sm' className='me-2' />
+          View Graph
+        </Button>
+      )}
       {selected !== -1 && (
         <CustomGraphViewModal
           selectedRows={[sources.data[selected].fileName]}
@@ -49,7 +65,7 @@ const App: React.FC = () => {
           viewPoint={'sample'}
         />
       )}
-    </>
+    </main>
   );
 };
 
