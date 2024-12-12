@@ -1,11 +1,12 @@
-import './App.css';
 import '@neo4j-ndl/base/lib/neo4j-ds-styles.css';
 import { useState } from 'react';
-import CustomGraphViewModal from './components/Graph/CustomGraphViewModal.tsx';
-import { useQuery } from 'react-query';
-import { getSources } from './services/SourcesList.ts';
+import Button from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
 import Table from 'react-bootstrap/Table';
-import { Button, FormCheck, Spinner } from 'react-bootstrap';
+import { useQuery } from 'react-query';
+import './App.css';
+import CustomGraphViewModal from './components/Graph/CustomGraphViewModal.tsx';
+import { getSources } from './services/SourcesList.ts';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 const App: React.FC = () => {
