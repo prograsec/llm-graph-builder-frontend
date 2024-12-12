@@ -19,7 +19,7 @@ import {
   MagnifyingGlassMinusIconOutline,
   MagnifyingGlassPlusIconOutline,
 } from '@neo4j-ndl/react/icons';
-import { IconButtonWithToolTip } from '../UI/IconButtonTooltip';
+
 import { filterData, getCheckboxConditions, graphTypeFromNodes, processGraphData } from '../../utils/Utils';
 
 import { customGraphQueryAPI } from '../../services/GraphQuery';
@@ -29,6 +29,7 @@ import CheckboxSelection from './CheckboxSelection';
 import ResultOverview from './ResultOverview.tsx';
 import { ResizePanelDetails } from './ResizePanel';
 import GraphPropertiesPanel from './GraphPropertiesPanel';
+import { IconButtonWithToolTip } from '../UI/IconButtonTooltip.tsx';
 
 const CustomGraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
   open,
