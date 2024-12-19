@@ -29,7 +29,7 @@ import CheckboxSelection from './CheckboxSelection';
 import ResultOverview from './ResultOverview.tsx';
 import { ResizePanelDetails } from './ResizePanel';
 import GraphPropertiesPanel from './GraphPropertiesPanel';
-import { IconButtonWithToolTip } from '../UI/IconButtonTooltip.tsx';
+import { IconButtonWithToolTip } from '../UI/IconButtonToolTip.tsx';
 
 const CustomGraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> = ({
   open,
