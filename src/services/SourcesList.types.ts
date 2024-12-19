@@ -1,44 +1,23 @@
-type TimeInfo = {
-  _Time__ticks: number;
-  _Time__hour: number;
-  _Time__minute: number;
-  _Time__second: number;
-  _Time__nanosecond: number;
-  _Time__tzinfo: null;
-};
-
-type DateInfo = {
-  _Date__ordinal: number;
-  _Date__year: number;
-  _Date__month: number;
-  _Date__day: number;
-};
-
-type DateTime = {
-  _DateTime__date: DateInfo;
-  _DateTime__time: TimeInfo;
-};
-
-type FileData = {
-  fileName: string;
-  errorMessage: string;
-  fileSource?: string; // Optional, only appears in some entries
-  fileSize?: number; // Optional, only appears in some entries
-  total_chunks: number;
-  processed_chunk: number;
-  processingTime: number;
-  nodeCount: number;
-  model: string;
-  fileType?: string; // Optional, only appears in some entries
-  relationshipCount: number;
-  is_cancelled?: boolean; // Optional, only appears in some entries
-  status: string;
-  createdAt?: DateTime; // Optional, only appears in some entries
-  updatedAt: DateTime;
-};
-
 export type SourcesListApiResponse = {
-  status: string;
-  data: FileData[];
-  message: string;
+  status: string; // "Success" or other status messages
+  data: SourceInfo[]; // Array of file processing details
+  message: string; // Additional information about the API call
+};
+
+export type SourceInfo = {
+  fileName: string; // Name of the file
+  errorMessage: string; // Error message if any
+  fileSource?: string; // Source of the file (e.g., "local file")
+  total_chunks: number; // Total number of chunks the file is divided into
+  processingTime: number; // Time taken to process the file (in seconds)
+  createdAt?: string; // Timestamp when the file processing started
+  fileSize?: number; // Size of the file in bytes
+  nodeCount: number; // Number of nodes processed
+  model: string; // Model used for processing
+  processed_chunk: number; // Number of chunks processed
+  fileType?: string; // File type (e.g., "pdf")
+  relationshipCount: number; // Number of relationships processed
+  is_cancelled?: boolean; // Whether the file processing was canceled
+  status: string; // Processing status (e.g., "Completed")
+  updatedAt: string; // Timestamp when the file processing was last updated
 };
