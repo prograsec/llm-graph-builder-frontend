@@ -9,7 +9,7 @@ import { getSources } from './services/SourcesList.ts';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import api from './API/Index.ts';
-import { Alert, FormControl } from 'react-bootstrap';
+import { Alert, FormControl, Spinner } from 'react-bootstrap';
 
 async function uploadFile(file: File) {
   const numberOfMBsRoundedUp = Math.ceil(file.size / 1024 / 1024);
@@ -79,12 +79,17 @@ const App: React.FC = () => {
     return 'All systems running well.';
   })();
 
+  const isLoading = status !== 'All systems running well.';
+
   const fileSelected = file !== undefined;
 
   return (
     <>
       <main className='p-4'>
-        <Alert>{status}</Alert>
+        <Alert className='flex items-center gap-2'>
+          {isLoading ? <Spinner size='sm' /> : <p className='-mb-0.5 text-[14px]'>&#9989;</p>}
+          {status}
+        </Alert>
         <hr></hr>
 
         <form
