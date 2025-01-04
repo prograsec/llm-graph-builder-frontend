@@ -10,6 +10,7 @@ import { getSources } from './services/SourcesList.ts';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import api from './API/Index.ts';
 import { Alert, FormControl, Spinner } from 'react-bootstrap';
+import { SourceInfo } from './services/SourcesList.types.ts';
 
 async function uploadFile(file: File) {
   const numberOfMBsRoundedUp = Math.ceil(file.size / 1024 / 1024);
@@ -39,6 +40,15 @@ async function extractKnowledgeGraph(file: File) {
   await api.postForm('/extract_knowledge_graph/', formData);
 }
 
+async function deleteSource(source: SourceInfo) {
+  const formData = new FormData();
+  formData.append('filenames', JSON.stringify([source.fileName]));
+  formData.append('source_types', '["local file"]');
+  formData.append('delete_entities', 'true');
+
+  await api.postForm('/delete_knowledge_file/', formData);
+}
+
 const QUERY_KEY = {
   SOURCES_LIST: 'sources_list',
 };
@@ -59,6 +69,10 @@ const App: React.FC = () => {
     mutationFn: extractKnowledgeGraph,
     onSuccess: () => queryClient.invalidateQueries([QUERY_KEY.SOURCES_LIST]),
   });
+  const deleteSourceMutation = useMutation({
+    mutationFn: deleteSource,
+    onSuccess: () => queryClient.invalidateQueries([QUERY_KEY.SOURCES_LIST]),
+  });
 
   const [file, setFile] = useState<File | undefined>();
   const fileUploadRef = useRef<HTMLInputElement>(null);
@@ -71,6 +85,8 @@ const App: React.FC = () => {
       return 'File is being uploaded';
     } else if (extractKnowledgeGraphMutation.isLoading) {
       return 'Knowledge graph is being extracted from file';
+    } else if (deleteSourceMutation.isLoading) {
+      return 'File is being deleted';
     } else if (sourcesAreLoading) {
       return 'Sources are being loaded';
     } else if (sourcesAreFetching) {
@@ -132,6 +148,20 @@ const App: React.FC = () => {
           variant='success'
         >
           View Graph
+        </Button>
+        <Button
+          className='mb-3 ml-2 -mt-1'
+          disabled={selected === -1}
+          onClick={async () => {
+            if (!sources || selected === -1) {
+              return;
+            }
+            await deleteSourceMutation.mutateAsync(sources.data[selected]);
+            setSelected(-1);
+          }}
+          variant='danger'
+        >
+          Delete File
         </Button>
         <Table striped bordered hover>
           <thead>
