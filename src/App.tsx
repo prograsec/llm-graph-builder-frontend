@@ -11,8 +11,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import api from './API/Index.ts';
 import { Alert, FormControl, Spinner } from 'react-bootstrap';
 import { SourceInfo } from './services/SourcesList.types.ts';
+import NotLoggedInPage from './NotLoggedIn.tsx';
 
-async function uploadFile(file: File) {
+async function uploadFile({ file, userId }: { file: File; userId: string }) {
   const numberOfMBsRoundedUp = Math.ceil(file.size / 1024 / 1024);
 
   for (let i = 0; i < numberOfMBsRoundedUp; i++) {
@@ -25,26 +26,29 @@ async function uploadFile(file: File) {
     formData.append('chunk_number', (i + 1).toString());
     formData.append('total_chunks', numberOfMBsRoundedUp.toString());
     formData.append('original_name', file.name);
-    formData.append('model', 'sample');
+    formData.append('model', 'openai_gpt_4o_mini');
+    formData.append('user_id', userId);
 
     await api.postForm('/upload_knowledge_file/', formData);
   }
 }
 
-async function extractKnowledgeGraph(file: File) {
+async function extractKnowledgeGraph({ file, userId }: { file: File; userId: string }) {
   const formData = new FormData();
-  formData.append('model', 'groq_llama3_70b');
+  formData.append('model', 'openai_gpt_4o_mini');
   formData.append('file_name', file.name);
   formData.append('source_type', 'local file');
+  formData.append('user_id', userId);
 
   await api.postForm('/extract_knowledge_graph/', formData);
 }
 
-async function deleteSource(source: SourceInfo) {
+async function deleteSource({ source, userId }: { source: SourceInfo; userId: string }) {
   const formData = new FormData();
   formData.append('filenames', JSON.stringify([source.fileName]));
   formData.append('source_types', '["local file"]');
   formData.append('delete_entities', 'true');
+  formData.append('user_id', userId);
 
   await api.postForm('/delete_knowledge_file/', formData);
 }
@@ -54,7 +58,15 @@ const QUERY_KEY = {
 };
 
 const App: React.FC = () => {
+  const userId = new URLSearchParams(window.location.search).get('token') || '';
   const queryClient = useQueryClient();
+
+  const { data: authenticatd, isLoading: authenticationLoading } = useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      return (await api.get(`/api/user${userId ? `?user_id=${userId}` : ''}`)).data.user_exists || false;
+    },
+  });
 
   const {
     data: sources,
@@ -62,7 +74,7 @@ const App: React.FC = () => {
     isFetching: sourcesAreFetching,
   } = useQuery({
     queryKey: [QUERY_KEY.SOURCES_LIST],
-    queryFn: getSources,
+    queryFn: getSources.bind(null, userId),
   });
   const uploadFileMutation = useMutation({ mutationFn: uploadFile });
   const extractKnowledgeGraphMutation = useMutation({
@@ -99,6 +111,18 @@ const App: React.FC = () => {
 
   const fileSelected = file !== undefined;
 
+  if (authenticationLoading) {
+    return (
+      <div className='w-full h-screen flex items-center justify-center'>
+        <Spinner className='text-light-discovery-icon' />
+      </div>
+    );
+  }
+
+  if (!userId || !authenticatd) {
+    return <NotLoggedInPage />;
+  }
+
   return (
     <>
       <main className='p-4'>
@@ -115,8 +139,8 @@ const App: React.FC = () => {
               return;
             }
 
-            await uploadFileMutation.mutateAsync(file);
-            await extractKnowledgeGraphMutation.mutateAsync(file);
+            await uploadFileMutation.mutateAsync({ file, userId });
+            await extractKnowledgeGraphMutation.mutateAsync({ file, userId });
 
             fileUploadRef.current.value = '';
             setFile(undefined);
@@ -156,7 +180,7 @@ const App: React.FC = () => {
             if (!sources || selected === -1) {
               return;
             }
-            await deleteSourceMutation.mutateAsync(sources.data[selected]);
+            await deleteSourceMutation.mutateAsync({ source: sources.data[selected], userId });
             setSelected(-1);
           }}
           variant='danger'
