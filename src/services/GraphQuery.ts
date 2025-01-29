@@ -26,17 +26,15 @@ export const graphQueryAPI = async (
   }
 };
 
-export const customGraphQueryAPI = async (query_type: string, document_names: (string | undefined)[] | undefined) => {
-  try {
-    console.log(query_type);
-    const formData = new FormData();
-    formData.append('document_names', JSON.stringify(document_names));
-
-    return await api.postForm('/get_knowledge_graph/', formData);
-  } catch (error) {
-    console.log('Error Posting the Question:', error);
-    throw error;
-  }
+export const customGraphQueryAPI = async (
+  query_type: string,
+  document_names: (string | undefined)[] | undefined,
+  userId: string
+) => {
+  const formData = new FormData();
+  formData.append('document_names', JSON.stringify(document_names));
+  formData.append('user_id', userId);
+  return api.postForm('/get_knowledge_graph/', formData);
 };
 
 export const getNeighbors = async (userCredentials: UserCredentials, elementId: string) => {

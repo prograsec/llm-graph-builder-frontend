@@ -39,6 +39,7 @@ const CustomGraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> =
   nodeValues,
   relationshipValues,
   selectedRows,
+  userId,
 }) => {
   const nvlRef = useRef<NVL>(null);
   const [nodes, setNodes] = useState<ExtendedNode[]>([]);
@@ -107,9 +108,10 @@ const CustomGraphViewModal: React.FunctionComponent<CustomGraphViewModalProps> =
           ? await customGraphQueryAPI(
               graphQuery,
               // selectedRows?.map((f) => f.name)
-              selectedRows
+              selectedRows,
+              userId
             )
-          : await customGraphQueryAPI(graphQuery, [inspectedName ?? '']);
+          : await customGraphQueryAPI(graphQuery, [inspectedName ?? ''], userId);
       return nodeRelationshipData;
     } catch (error: any) {
       console.log(error);

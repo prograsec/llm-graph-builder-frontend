@@ -215,6 +215,7 @@ const App: React.FC = () => {
 
         {selected !== -1 && sources && (
           <CustomGraphViewModal
+            userId={userId}
             selectedRows={[sources.data[selected].fileName]}
             inspectedName={sources.data[selected].fileName}
             open={graphViewOpen}

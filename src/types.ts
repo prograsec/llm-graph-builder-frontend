@@ -52,6 +52,7 @@ export type CustomGraphViewModalProps = {
   nodeValues?: ExtendedNode[];
   relationshipValues?: ExtendedRelationship[];
   selectedRows?: string[];
+  userId: string;
 };
 
 export type GraphType = 'Entities' | 'DocumentChunk' | 'Communities';
